@@ -1,0 +1,54 @@
+RHEL 8 
+subscription-manager remove --all ; subscription-manager clean ; rpm -e katello-ca-consumer-lnx ; rpm -ivh https://lnx/pub/katello-ca-consumer-latest.noarch.rpm ; subscription-manager register --org="ORGNAME" --activationkey="1-rhel8workstations" ; subscription-manager repos --disable=* ; subscription-manager repos --enable=ORGNAME_GoogleChrome_GoogleChrome --enable=ORGNAME_EPEL_EPEL8-x86_64 --enable=rhel-8-for-x86_64-baseos-rpms --enable=rhel-8-for-x86_64-appstream-rpms --enable=ansible-2.9-for-rhel-8-x86_64-rpms
+
+RHEL 7
+ subscription-manager remove --all ; subscription-manager clean ; rpm -e katello-ca-consumer-lnx ; rpm -ivh https://lnxpu/katello-ca-consumer-latest.noarch.rpm ; subscription-manager register --org="ORGNAME" --activationkey="1-rhel7workstations" ; subscription-manager repos | grep "Repo ID:" ; suscription-manager repos --disable=* ; subscription-manager repos --enable=rhel-7-workstation-rpms --enable=ORGNAME_GoogleChrome_GoogleChrome --enable=ORGNAME_EPEL_Extra_Packages_fo_Enterprise_Linux_7_EPEL_Extra_Packages_for_Enterprise_Linux_7
+
+SITE DOWN
+ stop apache and tomcat, clear work/ files in /opt/site/data/tomcat/ , clear any tomcat.pid in temp/ 
+
+start up tomcat again and then apache 
+
+ systemctl stop tomcat-transit.service
+[root@hostname ~]# systemctl stop httpd24-httpd.service
+[root@hostname ~]# rm -rf /opt/site/server/data/tomcat/temp/tomcat.pid
+[root@hostname ~]# rm -rf /opt/site/servert/data/tomcat/work/*
+[root@hostname ~]# systemctl start httpd24-httpd.service
+[root@hostname ~]# systemctl start tomcat-transit.service
+
+LVM
+https://networklessons.com/uncategorized/extend-lvm-partition
+
+Solution for error: cannot open Packages database in /var/lib/rpm
+[root@hostname ~]# yum clean all
+rpmdb: Thread/process 57569/140362829735680 failed: Thread died in Berkeley DB library
+error: db3 error(-30974) from dbenv->failchk: DB_RUNRECOVERY: Fatal error, run database recovery
+error: cannot open Packages index using db3 - (-30974)
+error: cannot open Packages database in /var/lib/rpm
+CRITICAL:yum.main:
+# rm -rfv /var/lib/rpm/__*
+
+
+Yum. Error with rpmdb?
+mv /var/lib/rpm/__db* /tmp
+cd /var/lib/rpm
+rm -rf __db*
+db_verify Packages
+rm -rf /var/cache/yum
+rpm --rebuilddb
+
+db_verify Packages
+BDB5105 Verification of Packages succeeded.
+...
+Step 2: reboot your server
+Step 3:
+1	yum update
+2	rm -rf /tmp/__db*
+
+
+OTHER
+pssh -h output.txt -I "command option argument "
+
+To run the command against a list of hosts identified in < output.txt > output = inventoryfile
+
+
