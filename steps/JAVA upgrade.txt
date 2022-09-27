@@ -1,0 +1,70 @@
+==================UPDATED STEPS=========================================
+================Packages===============
+Preference is openjdk 11         :  java-11-openjdk.x86_64
+Unless java 8, use openjdk 8     :  java-1.8.0-openjdk
+Sworn enemy is oracle jdk        :  jdk1.8.0_121.x86_64
+
+============Use first to determine current system 'default':================
+
+update-alternatives --config java
+
+
+==========Typical removal oraclejdk1.8 /replacement openjdk 1.8) :==========
+
+
+systemctl stop httpd24-httpd*.service
+systemctl stop tomcat*.service
+
+yum install java-1.8.0-openjdk.x86_64
+			java-11-openjdk.x86_64
+			
+yum remove jdk1.8.0_121.x86_64
+
+update-alternatives --config java (select new version, use path from update-alternatives below for symbolic link to /usr/java/latest )
+
+mkdir /usr/java	(if missing)
+
+cd /usr/java
+
+ln -s /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-1.el7_9.x86_64/jre/ latest
+				or
+	  /usr/lib/jvm/java-11-openjdk-11.0.14.1.1-1.el7_9.x86_64/
+	
+ln -s latest/ default
+
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-1.el7_9.x86_64
+				or 
+	/usr/lib/jvm/java-11-openjdk-11.0.14.1.1-1.el7_9.x86_64
+	
+export PATH=$JAVA_HOME/bin:$PATH
+
+java -version
+systemctl start tomcat*.service ; tail -f /opt/site/products/data/tomcat/logs/catalina.out
+systemctl start httpd24-httpd*.service
+
+====================OLD STEPS================================================================
+
+1st preference is openjdk 11         :  java-11-openjdk.x86_64
+2nd preference is openjdk 8          :  java-1.8.0-openjdk
+Must remove   (oracle)                  :  jdk1.8.0_121.x86_64
+
+
+update-alternatives --config java
+
+
+systemctl stop httpd24-httpd*.service
+systemctl stop tomcat*.service
+yum install java-1.8.0-openjdk.x86_64
+yum remove jdk1.8.0_121.x86_64
+update-alternatives --config java
+mkdir /usr/java
+cd /usr/java
+ln -s /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-1.el7_9.x86_64/jre/ latest
+or
+/usr/lib/jvm/java-11-openjdk-11.0.14.1.1-1.el7_9.x86_64/
+ln -s latest/ default
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.322.b06-1.el7_9.x86_64
+export PATH=$JAVA_HOME/bin:$PATH
+java -version
+systemctl start tomcat*.service ; tail -f /opt/site/products/data/tomcat/logs/catalina.out
+systemctl start httpd24-httpd*.service
