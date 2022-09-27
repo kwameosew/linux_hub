@@ -1,0 +1,41 @@
+All of these steps done on wks
+=============================================
+
+wks
+
+sudo openssl req -newkey rsa:4096 -keyout wks.crypt.key --config /etc/ssl/openssl.cnf -out wks.csr
+
+sudo chown user:user *
+
+openssl rsa -in wks.crypt.key -out wks.nocrypt.key
+
+cat wks.csr
+
+## AD Certificate server https://servername/certsrv/ 
+## Request a certificate
+## Submit a certificate request by using a base-64-encoded CMC or PKCS #10 file, or submit a renewal request by using a base-64-encoded PKCS #7 file.
+## paste csr into field
+## change certificate template to '13 month validity template'
+## attributes add:
+## san:dns=wks&dns=wks&dns=alias
+
+
+cp /home/userj/wks.p7b .
+
+openssl pkcs7 -inform DER -outform PEM -in wks.p7b -print_certs > wks.crt
+
+zip wks.zip *
+
+
+On cobbler server:
+===============================================
+
+scp then cp all wkslnx___.zip (certificates) files to lnx:/var/www/xxxx/ks_mirror/rhel-8.5/
+
+All files on lnx:/var/www/xxxxr/ks_mirror/rhel-8.5 must be chown user:user and chmod 644 to be accessible to the http installation source:
+
+
+vim each wkslnx____.cfg file to update the device name with sed or in vim
+:%s/wks/wks/g
+
+
