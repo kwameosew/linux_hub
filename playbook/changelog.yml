@@ -1,5 +1,4 @@
-# $Id: changelog.yml,v 1.0 2021/05/06 11:59:00 liam.kelly Exp $
-# Adapted from Mike E
+# $Id: changelog.yml,
 # $Log: changelog.yml,v $
 #
 # Updates a changelog file on the target server; intended to be included from other playbooks

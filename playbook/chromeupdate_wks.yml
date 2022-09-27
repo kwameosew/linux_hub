@@ -1,0 +1,22 @@
+---
+- name: Upgrade Google Chrome
+  hosts: workstations
+  become: yes
+
+  tasks:
+    - name: Attach to repo id ORGNAME_GoogleChrome_GoogleChrome
+      community.general.redhat_subscription:
+        state: present
+        pool_ids: 
+
+    - name: Install chrome from repository
+      yum:
+        name: google-chrome-stable
+        state: present
+
+  handlers:
+
+  - name: Update /Changelog
+    include_tasks: changelog.yml
+    listen: "Writing to /Changelog"
+
