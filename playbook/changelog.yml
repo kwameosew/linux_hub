@@ -1,0 +1,18 @@
+# $Id: changelog.yml,v 1.0 2021/05/06 11:59:00 liam.kelly Exp $
+# Adapted from Mike E
+# $Log: changelog.yml,v $
+#
+# Updates a changelog file on the target server; intended to be included from other playbooks
+# Requires that the {{ description }} var be populated from the calling playbook
+# :!ansible-playbook --syntax-check %
+# :!ansible-playbook %
+
+---
+   - name: "Update Changelog with {{ description }}"
+     lineinfile:
+       path: /ChangeLog
+       line: "{{ ansible_date_time.iso8601 }} {{ lookup('env', 'USER') | default('UNKNOWN', true) }} {{ description }}"
+       insertafter: EOF
+       create: yes
+       mode: 0644
+       backup: no

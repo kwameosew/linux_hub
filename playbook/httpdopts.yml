@@ -1,0 +1,83 @@
+---
+- name: Find gao_vhost.conf files and set some options
+  hosts: all
+  become: yes
+
+  vars:
+    description: Update security options in gao_vhost.conf
+
+  tasks:
+
+  - name: Get all httpd services
+    shell: systemctl list-unit-files | grep httpd24-httpd_ | grep enabled | awk '{print $1}'
+    register: services
+    changed_when: no
+
+  - name: Find gao_vhost.conf files
+    find:
+      paths: /opt/site
+      file_type: file
+      recurse: yes
+      patterns: "gao_vhost.conf"
+    register: vhost_files
+
+#  - name: Debug files_matched loop
+#    debug:
+#      var: item.path
+#    loop: "{{ vhost_files.files|flatten(levels=1) }}"
+#    loop_control:
+#      label: "{{ item.path }}"
+
+  - name: Change SSL cipher suites
+    lineinfile:
+      backup: yes
+      path: "{{ item.path }}"
+      regexp: '^    SSLCipherSuite'
+      line: '    SSLCipherSuite "EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA!RC4:EECDH:!ECDHE-RSA-AES128-SHA256:!ECDH-RSA-AES128-SHA256:!ECDHE-RSA-AES256-SHA:!ECDHE-RSA-AES128-SHA:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS" '
+    loop: "{{ vhost_files.files|flatten(levels=1) }}"
+    loop_control:
+      label: "{{ item.path }}"
+    notify:
+      - 'Restart httpd'
+      - "Writing to /Changelog"
+
+  - name: Honor cipher order
+    lineinfile:
+      backup: yes
+      path: "{{ item.path }}"
+      insertafter: '^    SSLCipherSuite'
+      line: '    SSLHonorCipherOrder On'
+    loop: "{{ vhost_files.files|flatten(levels=1) }}"
+    loop_control:
+      label: "{{ item.path }}"
+    notify:
+      - 'Restart httpd'
+      - "Writing to /Changelog"
+
+  - name: Disable HTTPD OPTIONS method
+    blockinfile:
+      backup: yes
+      path: "{{ item.path }}"
+      insertafter: '^    SSLHonorCipherOrder On'
+      block: |
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} ^OPTIONS
+        RewriteRule .* - [F]
+    loop: "{{ vhost_files.files|flatten(levels=1) }}"
+    loop_control:
+      label: "{{ item.path }}"
+    notify:
+      - 'Restart httpd'
+      - "Writing to /Changelog"
+
+  handlers:
+  - name: Restart all httpd services
+    listen: 'Restart httpd'
+    service:
+      name: " {{item}} "
+      state: restarted
+    with_items: " {{services.stdout_lines}} "
+
+  - name: Update /Changelog
+    include_tasks: changelog.yml
+    listen: "Writing to /Changelog"

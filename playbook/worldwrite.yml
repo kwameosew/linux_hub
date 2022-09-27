@@ -1,0 +1,32 @@
+---
+- name: Fix world-writable files
+  hosts: all
+  become: yes
+  vars:
+    description: Fix world-writable files
+
+  tasks:
+
+    - name: Fix permissions on SplunkForwarder.service
+      file:
+        path: /usr/lib/systemd/system/SplunkForwarder.service
+        mode: '0644'
+      # We're OK if this file doesn't exist
+      ignore_errors: true
+      notify: "Writing to /Changelog"
+
+    # Commenting this out for now since I'm not 100% sure it's safe
+#    - name: Fix permissions on Bigfix files
+#      file:
+#        path: '{{ item }}'
+#        mode: '0664'
+#      loop:
+#        - "/var/opt/BESCommon/.HostIDAccess.read"
+#        - "/var/opt/BESCommon/.HostIDAccess.write"
+      # We're OK if a file doesn't exist
+#      ignore_errors: true
+
+  handlers:
+  - name: Update /Changelog
+    include_tasks: changelog.yml
+    listen: "Writing to /Changelog"

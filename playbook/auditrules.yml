@@ -1,0 +1,24 @@
+---
+- name: Make audit.rules immutable
+  hosts: all
+  become: yes
+  vars:
+    description: Make /etc/audit/audit.rules immutable
+
+  tasks:
+
+    - name: Make /etc/audit/audit.rules immutable
+      file:
+       path: /etc/audit/audit.rules
+       attr: +i
+      register: audit_file
+      changed_when: "'i' not in audit_file.diff.before.attributes"
+      notify:
+        - "Writing to /Changelog"    
+        
+  handlers:
+
+    - name: Update /Changelog
+      include_tasks: changelog.yml
+      listen: "Writing to /Changelog"
+
