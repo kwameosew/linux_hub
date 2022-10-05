@@ -1,0 +1,55 @@
+# BigFix Package Install
+# Created on 11/6/2019 by hensleyb
+# https://reposerver/repository/OEESS_Linux/BESAgent/BESAgent-9.5.18.74-rhe6.x86_64.rpm
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  tasks:
+#    - name: Create Directory /var/tmp/bigfix
+#      file:
+#        path: /var/tmp/bigfix
+#        state: directory
+#        owner: root
+#        group: gao.admin
+#	mode: 770
+
+    - name: Create Directory /etc/opt/BESClient
+      file:
+        path: /etc/opt/BESClient
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+#    - name: Copy Big Fix package
+#      copy:
+#        src: ~/personal_playbooks/files/BESAgent-9.5.14.73-rhe6.x86_64.rpm
+#        dest: /var/tmp/bigfix
+
+    - name: Copy actionsite.afxm
+      copy:
+        src: ../files/actionsite.afxm
+        dest: /etc/opt/BESClient
+
+    - name: Install the BESClient agent from Nexus repo
+      yum:
+        name: https://reposerver/repository/OEESS_Linux/BESAgent/BESAgent-9.5.18.74-rhe6.x86_64.rpm
+        state: present
+        validate_certs: no
+        disable_gpg_check: yes
+
+#    - name: RPM Install Big Fix
+#      command: rpm -ivh /var/tmp/bigfix/BESAgent-9.5.14.73-rhe6.x86_64.rpm
+
+    - name: Enable Big Fix Service
+      service:
+        name: besclient.service
+        enabled: yes
+        state: started
+
+#    - name: Delete Directory /var/tmp/bigfix
+#      file:
+#        path: /var/tmp/bigfix
+#        state: absent

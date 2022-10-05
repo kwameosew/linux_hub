@@ -1,0 +1,29 @@
+---
+- name: chmod all /home/* directories to 750 (was 755)
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: Evaluating home dirs    
+    find:    
+      path: "/home"    
+      file_type: "directory"    
+    register: homedirs    
+
+  # This returns the actual dir-path's 
+  - set_fact: 
+      homes: "{{ homedirs.files | map(attribute='path') | list }}"           
+
+  - name: Changing permissions of /home/*
+    file:    
+      path: "{{ item }}"  
+      mode: 0750  
+    with_items:    
+      - "{{ homes }}"
+
+  handlers:
+
+  - name: Update /Changelog
+    include_tasks: changelog.yml
+    listen: "Writing to /Changelog"
+

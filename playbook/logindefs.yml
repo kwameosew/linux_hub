@@ -1,0 +1,26 @@
+---
+- name: Set login defs
+  hosts: all
+  become: yes
+  vars:
+    description: Config options in /etc/login.defs
+
+  tasks:
+
+    - name: Set PASS_MIN_DAYS in /etc/login.defs
+      lineinfile:
+        path: /etc/login.defs
+        regexp: '^PASS_MIN_DAYS'
+        line: PASS_MIN_DAYS   7
+        insertafter: '^PASS_MAX_DAYS'
+        state: present
+        backup: yes
+      notify:
+        - "Writing to /Changelog"    
+        
+  handlers:
+
+    - name: Update /Changelog
+      include_tasks: changelog.yml
+      listen: "Writing to /Changelog"
+

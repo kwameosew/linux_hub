@@ -1,0 +1,27 @@
+# User Creation
+# Create user on single server and generate SSH key for them. Set password for user on single server and grab ---
+- hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  tasks:
+   - name: add group
+     group:
+       name: groupname
+       gid: groupid
+       state: present
+- name: add user
+     user:
+       name: username
+       comment: "FN, LN "
+       password: hash
+       group: groupname
+#       groups: wheel
+       uid:
+       state: present
+- name: deploy keys
+     authorized_key:
+       user:username
+       state: present
+       key: "{{ lookup('file', '../files/username.authorized_keys') }}"
+       path: /home/username/.ssh/authorized_keys

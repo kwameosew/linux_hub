@@ -1,0 +1,53 @@
+--- 
+- name: Change /etc/fstab options and remount
+  hosts: all
+  become: yes
+
+  vars:
+    description: Change disk mount options
+  
+  tasks:
+    - name: Alter /etc/fstab lines
+      lineinfile:
+        path: /etc/fstab
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes
+      loop:
+        - regexp: 'UUID=ca347cee-7e46-4dd0-819c-9787dae9f6cf /boot' 
+          line: 'UUID=ca347cee-7e46-4dd0-819c-9787dae9f6cf /boot                   xfs     nodev        0 0'
+        - regexp: '/dev/mapper/VolGroup00-lv_home /home' 
+          line: '/dev/mapper/VolGroup00-lv_home /home xfs nodev,nosuid 0 0'
+        - regexp: '/dev/mapper/VolGroup00-lv_opt /opt' 
+          line: '/dev/mapper/VolGroup00-lv_opt /opt                    xfs     nodev        0 0'
+        - regexp: '/dev/mapper/VolGroup00-lv_usr /usr' 
+          line: '/dev/mapper/VolGroup00-lv_usr /usr                    xfs     nodev        0 0'
+        - regexp: '/dev/mapper/VolGroup00-lv_usr_local /usr/local' 
+          line: '/dev/mapper/VolGroup00-lv_usr_local /usr/local              xfs     nodev        0 0'
+        - regexp: '/dev/mapper/VolGroup00-lv_var /var' 
+          line: '/dev/mapper/VolGroup00-lv_var /var                    xfs     nodev,nosuid,noexec        0 0'
+        - regexp: '/dev/mapper/VolGroup00-lv_var_log /var/log' 
+          line: '/dev/mapper/VolGroup00-lv_var_log /var/log                xfs     nodev        0 0'
+        - regexp: '/dev/mapper/VolGroup00-lv_var_log_audit /var/log/audit' 
+          line: '/dev/mapper/VolGroup00-lv_var_log_audit /var/log/audit          xfs     nodev        0 0'
+      notify:
+        - "Remount disks"
+        - "Writing to /Changelog"
+
+  handlers:
+  - name: Remount disks
+    mount:
+      path: "{{ item }}"
+      state: remounted
+    loop:
+        - /boot
+        - /home
+        - /opt
+        - /usr
+        - /usr/local
+        - /var
+        - /var/log
+        - /var/log/audit
+  - name: Update /Changelog
+    include_tasks: changelog.yml
+    listen: "Writing to /Changelog"

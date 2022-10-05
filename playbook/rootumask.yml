@@ -1,0 +1,22 @@
+---
+- name: Change default umask for root
+  hosts: all
+  become: yes
+  vars:
+    description: Change root umask
+
+  tasks:
+
+  - name: Set umask in /root/.bash_profile
+    lineinfile:
+      path: /root/.bash_profile
+      regexp: umask 022
+      line: umask 077
+      state: present
+      backup: yes
+    notify: "Writing to /Changelog"
+
+  handlers:
+  - name: Update /Changelog
+    include_tasks: changelog.yml
+    listen: "Writing to /Changelog"

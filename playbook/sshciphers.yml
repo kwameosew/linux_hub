@@ -1,0 +1,31 @@
+---
+- name: Disable Weak SSH Ciphers
+  hosts: all
+  become: yes
+  vars:
+    description: Disable weak SSH ciphers
+
+  tasks:
+
+    - name: Update Key Exchange algorithms
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^KexAlgorithms'
+        line: KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256
+        state: present
+        backup: yes
+      notify:
+        - 'Restart sshd'
+        - "Writing to /Changelog"
+
+  handlers:
+    - name: Restart sshd
+      listen: 'Restart sshd'
+      service:
+        name: sshd
+        state: restarted
+
+    - name: Update /Changelog
+      include_tasks: changelog.yml
+      listen: "Writing to /Changelog"
+

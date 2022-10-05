@@ -1,0 +1,77 @@
+---
+- name: Reconfigure subscription-manager and yum repos for RHEL 7
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: subscription-manager remove --all
+      command: 'subscription-manager remove --all'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+    - name: subscription-manager clean
+      command: 'subscription-manager clean'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+    - name: rpm -e katello-ca-consumer-lnx
+      command: 'rpm -e katello-ca-consumer-lnx'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+##uuidfacts.yml in linux_admin 'playbooks/misc' directory has been run against all devices already and contains these next two deprecated blocks
+#- name: Copy uuid.facts file to /etc/rhsm/facts/
+#      copy:
+#        src: ../files/uuid.facts.j2
+#        dest: /etc/rhsm/facts/uuid.facts
+#        owner: root
+#        group: root
+#        mode: 0644
+#
+#    - name: Set hostname on conf file to avoid duplicate registration error message
+#      command: sed -i s/customuuid/{{ inventory_hostname }}/g /etc/rhsm/facts/uuid.facts
+#      become: yes
+#      become_method: sudo
+#      ignore_errors: yes
+
+    - name: rpm -ivh https://satelliteserver/pub/katello-ca-consumer-latest.noarch.rpm
+      command: 'rpm -ivh https://satelliteserver/pub/katello-ca-consumer-latest.noarch.rpm'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+#    - name: Update the consumed subscriptions from the previous example (remove Red Hat Virtualization subscription)
+#      redhat_subscription:
+#        state: present
+#        #activationkey: 1-rhel7server64
+#        #org_id: ORGID
+#        #pool: '^Red Hat Enterprise Server$'
+#        auto_attach: true
+#        #server_hostname: https://satelliteserver/rhsm
+
+    - name: subscription-manager register RHEL7 activation key
+      command: 'subscription-manager register --org="ORGNAME" --activationkey="1-rhel7workstations"'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+    - name: subscription-manager repos --disable all
+      command: 'subscription-manager repos --disable=*'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+    - name: enable repos
+      command: 'subscription-manager repos --enable=rhel-7-server-rpms --enable=rhel-7-server-extras-rpms --enable=rhel-7-server-rh-common-rpms --enable=rhel-7-server-supplementary-rpms --enable=rhel-7-server-optional-rpms --enable=GAO_EPEL_Extra_Packages_for_Enterprise_Linux_7_EPEL_Extra_Packages_for_Enterprise_Linux_7'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+#    - name: yum update
+#      command: 'yum update -y'
+#            become: yes
+#      become_method: sudo
+#      ignore_errors: yes

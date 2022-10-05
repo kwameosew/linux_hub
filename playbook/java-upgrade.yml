@@ -1,0 +1,68 @@
+---
+- hosts: hostname
+  become: yes
+  become_method: sudo
+  gather_facts: yes
+  tasks:
+
+    - name: Stop tomcat-rad.service to update java 
+      ansible.builtin.systemd:
+        state: stopped
+        name: tomcat-rad.service
+
+    - name: Remove jdk1.8-1.8.0_291-fcs.x86_64
+      yum:
+        name: jdk1.8-1.8.0_291-fcs.x86_64
+        state: absent
+
+    - name: Remove jdk1.8.0_121
+      yum:
+        name: jdk1.8.0_121
+        state: absent
+
+    - name: Remove java-1.8.0-openjdk if  present
+      yum:
+        name: java-1.8.0-openjdk
+        state: absent
+
+    - name: Remove and java-1.8.0-openjdk-devel if present
+      yum:
+        name: java-1.8.0-openjdk-devel
+        state: absent
+
+    - name: Update java-11-openjdk and java-11-openjdk-devel packages to latest
+      yum:
+        name:
+          - java-11-openjdk
+          - java-11-openjdk-devel
+        state: latest
+
+    - name: Create /usr/java directory if it does not exist
+      ansible.builtin.file:
+        path: /usr/java
+        state: directory
+        mode: '0755'
+
+    - name: Create a symbolic link
+      ansible.builtin.file:
+        src: /usr/lib/jvm/java-11-openjdk-11.0.14.1.1-2.el8_5.x86_64/bin/
+        dest: /usr/java/latest
+        owner: root
+        group: root
+        state: link
+
+    - name: Set correct alternatives for 'java' version selected
+      alternatives:
+        name: java
+        path: /usr/lib/jvm/java-11-openjdk-11.0.14.1.1-2.el8_5.x86_64/bin/java
+
+    - name: Set correct alternatives for 'javac' version selected
+      alternatives:
+        name: javac
+        path: /usr/lib/jvm/java-11-openjdk-11.0.14.1.1-2.el8_5.x86_64/bin/javac
+
+    - name: Start tomcat-rad.service
+      ansible.builtin.systemd:
+        state: started
+        name: tomcat-rad.service
+

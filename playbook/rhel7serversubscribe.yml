@@ -1,0 +1,35 @@
+---
+- name: Reconfigure subscription-manager and yum repos for RHEL 7 Server
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: subscription-manager remove --all
+      command: 'subscription-manager remove --all'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+    - name: subscription-manager clean
+      command: 'subscription-manager clean'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+    - name: rpm -e katello-ca-consumer-satelliteserver
+      command: 'rpm -e katello-ca-consumer-satelliteserver'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+    - name: rpm -ivh https://satelliteserver/pub/katello-ca-consumer-latest.noarch.rpm
+      command: 'rpm -ivh https://satelliteserver/pub/katello-ca-consumer-latest.noarch.rpm'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes
+
+    - name: subscription-manager register RHEL7 activation key
+      command: 'subscription-manager register --org="ORGNAME" --activationkey="1-rhel7server64"'
+      become: yes
+      become_method: sudo
+      ignore_errors: yes

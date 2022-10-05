@@ -1,0 +1,46 @@
+---
+- name: Disable ICMP Timestamps
+  hosts: all
+  become: yes
+
+  vars:
+    description: Disable ICMP Timestamps
+
+  tasks:
+
+  # Collect facts about running services
+  - name: Populate service facts
+    service_facts:
+
+  # The firewalld ansible module doesn't support this, so we have to use the shell
+  - name: Make permanent firewalld rule to disable ICMP timestamps
+    shell: firewall-cmd --add-icmp-block={{item}} --permanent
+    with_items:
+      - "timestamp-request"
+      - "timestamp-reply"
+    # Only when firewalld is running
+    when: ansible_facts.services["firewalld.service"].state == "running"
+    notify: "Writing to /Changelog"
+
+  - name: Make active firewalld rule to disable ICMP timestamps
+    shell: firewall-cmd --add-icmp-block={{item}}
+    with_items:
+      - "timestamp-request"
+      - "timestamp-reply"
+    # Only when firewalld is running
+    when: ansible_facts.services["firewalld.service"].state == "running"
+    notify: "Writing to /Changelog"
+
+  # Disable TCP timestamps
+  - name: Disable TCP timestamps with sysctl
+    sysctl:
+      name: net.ipv4.tcp_timestamps
+      value: '0'
+      sysctl_set: yes
+    notify: "Writing to /Changelog"
+    ignore_errors: true
+
+  handlers:
+  - name: Update /Changelog
+    include_tasks: changelog.yml
+    listen: "Writing to /Changelog"

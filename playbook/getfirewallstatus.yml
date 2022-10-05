@@ -1,0 +1,16 @@
+---
+
+- hosts: all
+  become: true
+
+  tasks:
+    - name: Check for firewalld
+      service_facts:
+
+    - name: Return firewalld service_facts
+      debug:
+       var: ansible_facts.services["firewalld.service"]
+
+    - name: Return iptables service_facts
+      debug:
+       var: ansible_facts.services["iptables.service"]

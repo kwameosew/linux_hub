@@ -1,0 +1,14 @@
+--- 
+- name: Retire QPL web site
+  hosts: all
+  become: yes
+  tasks:
+    - name: Stop and disable QPL web site
+      systemd:
+        name: httpd24-httpd_qpl
+        state: stopped
+        enabled: no
+    - name: Tar old web site files
+      archive:
+        path: /opt/site/qpl
+        dest: /opt/site/qpl.tar.gz

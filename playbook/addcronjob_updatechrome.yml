@@ -1,0 +1,24 @@
+- hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  tasks:
+   - name: Enable ORGNAME_GoogleChrome_GoogleChrome repository
+     community.general.rhsm_repository:
+       name: ORGNAME_GoogleChrome_GoogleChrome
+       state: enabled
+
+   - name: Ensure a job that runs at 2 am exists
+     ansible.builtin.cron:
+       name: "Nightly Cron to check for updates to google-chrome-stable.x86_64"
+       minute: "0"
+       hour: "2"
+       job: "/bin/yum update -y google-chrome-stable.x86_64"
+       state: present
+
+
+  handlers:
+  - name: Update /Changelog
+    include_tasks: changelog.yml
+    listen: "Writing to /Changelog"
+
