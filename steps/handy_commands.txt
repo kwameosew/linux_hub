@@ -52,3 +52,4 @@ pssh -h output.txt -I "command option argument "
 To run the command against a list of hosts identified in < output.txt > output = inventoryfile
 
 
+lvmdiskscan
